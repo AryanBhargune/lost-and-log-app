@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lost &amp; Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="boot">
+    <div class="spinner-lg"></div>
+    <p>Initializing Lost &amp; Log…</p>
+  </div>
+
+  <div id="scanline"></div>
+
+  <div id="app" style="display:none;">
+    <header class="topbar">
+      <div class="brandmark">
+        <span class="bracket">[</span>
+        <h1 class="brand">LOST &amp; LOG</h1>
+        <span class="bracket">]</span>
+      </div>
+      <nav class="navicons">
+        <div class="navbtn" data-view="home" title="Home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+        </div>
+        <div class="navbtn" data-view="myreports" title="My Reports">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+        </div>
+        <div class="navbtn" data-view="notifications" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a5 5 0 0 0-5 5v3.6c0 .5-.2 1-.6 1.4L5 14.5c-.6.6-.2 1.5.6 1.5h13c.8 0 1.2-.9.6-1.5l-1.4-1.5a2 2 0 0 1-.6-1.4V8a5 5 0 0 0-5-5Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+          <span class="badge" id="notifBadge" style="display:none;">0</span>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main"></main>
+  </div>
+
+  <!-- NAME PROMPT MODAL (first visit only) -->
+  <div class="overlay" id="nameOverlay">
+    <div class="modal">
+      <div class="modal-header"><span class="modal-title">Welcome to Lost &amp; Log</span></div>
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="nameInput" placeholder="e.g. Aryan Bhargune">
+      </div>
+      <button class="btn btn-primary" id="nameSubmitBtn">Continue</button>
+    </div>
+  </div>
+
+  <!-- REPORT LOST MODAL -->
+  <div class="overlay" id="lostOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="back" data-close>&#8592;</span>
+        <span class="modal-title">Report Lost Item</span>
+      </div>
+      <div class="field" id="lostCatField">
+        <label>Category</label>
+        <select id="lostCategory">
+          <option value="">Select category</option>
+          <option>ID Card</option>
+          <option>Wallet</option>
+          <option>Electronics</option>
+          <option>Water Bottle</option>
+          <option>Umbrella</option>
+          <option>Charger / Cable</option>
+          <option>Keys</option>
+          <option>Bag</option>
+          <option>Other</option>
+        </select>
+        <div class="field-err">Please select a category</div>
+      </div>
+      <div class="field" id="lostDescField">
+        <label>Description</label>
+        <textarea id="lostDesc" placeholder="e.g. Blue umbrella, left near Admin Office"></textarea>
+        <div class="field-err">Description can't be empty</div>
+      </div>
+      <button class="btn btn-primary" id="lostSubmitBtn">Submit Report</button>
+    </div>
+  </div>
+
+  <!-- REPORT FOUND MODAL -->
+  <div class="overlay" id="foundOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="back" data-close>&#8592;</span>
+        <span class="modal-title">Report Found Item</span>
+      </div>
+      <label class="mono" style="font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-faint); display:block; margin-bottom:8px;">You're reporting you found</label>
+      <div class="preview-card" id="foundPreview"></div>
+      <div class="field" id="foundLocField">
+        <label>Drop-off location</label>
+        <select id="foundLoc">
+          <option value="">Select drop-off point</option>
+          <option>Admin Office</option>
+          <option>Library Desk</option>
+          <option>Security Cabin</option>
+          <option>Hostel Warden</option>
+          <option>Canteen Counter</option>
+          <option>Other</option>
+        </select>
+        <div class="field-err">Please select a drop-off location</div>
+      </div>
+      <button class="btn btn-primary" id="foundSubmitBtn">Confirm Found</button>
+    </div>
+  </div>
+
+  <div id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
