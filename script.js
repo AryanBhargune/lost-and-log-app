@@ -94,21 +94,21 @@ function renderBadge(){
   if(count > 0){ b.style.display = "flex"; b.textContent = count > 9 ? "9+" : String(count); }
   else b.style.display = "none";
 }
-function cardThumb(){ return '<div class="thumb">[ ]</div>'; }
+function cardThumb(){ return ''; }
 
 function renderHome(){
   var active = state.reports.filter(function(r){ return r.status === "pending"; });
-  var html = '<div class="section-label"><span>Active Reports</span><span class="count">' + active.length + '</span></div>';
-  html += '<button class="btn btn-primary" id="openLostBtn" style="margin-bottom:18px;">+ Report Lost Item</button>';
+  var html = '<div class="section-label"><span>THE BOARD</span><span class="count">' + active.length + ' open</span></div>';
+  html += '<button class="btn btn-primary" id="openLostBtn" style="margin-bottom:20px;">+ File a Lost-Item Ticket</button>';
 
   if(active.length === 0){
-    html += '<div class="empty"><div class="icon">&#9679;</div><p>No active reports right now.</p></div>';
+    html += '<div class="empty"><div class="icon">&#9679;</div><p>The board is clear. Nothing reported lost.</p></div>';
   } else {
     active.forEach(function(r){
-      html += '<div class="card"><div class="card-row">' + cardThumb() +
-        '<div class="card-body"><div class="card-cat">' + esc(r.category) + '</div>' +
+      html += '<div class="card">' +
+        '<div class="card-cat">' + esc(r.category) + '</div>' +
         '<div class="card-desc">' + esc(r.description) + '</div>' +
-        '<div class="card-meta"><span>' + timeAgo(r.createdAt) + '</span></div></div></div>' +
+        '<div class="card-meta"><span>FILED ' + timeAgo(r.createdAt) + '</span></div>' +
         '<div class="card-actions"><button class="btn btn-small found-btn" data-id="' + r.id + '">I Found This</button></div></div>';
     });
   }
@@ -120,28 +120,30 @@ function renderHome(){
   });
 }
 
-function statusPill(status){
-  var label = status.charAt(0).toUpperCase() + status.slice(1);
-  return '<span class="status ' + status + '"><span class="led"></span>' + label + '</span>';
+function stampEl(status, justStamped){
+  var label = status.toUpperCase();
+  return '<span class="stamp ' + status + (justStamped ? ' stamp-in' : '') + '">' + label + '</span>';
 }
 
 function renderMyReports(){
   var mine = state.reports.filter(function(r){ return r.reporterId === state.myId; });
-  var html = '<div class="section-label"><span>My Reports</span><span class="count">' + mine.length + '</span></div>';
+  var html = '<div class="section-label"><span>MY CLAIMS</span><span class="count">' + mine.length + ' filed</span></div>';
   if(mine.length === 0){
-    html += '<div class="empty"><div class="icon">&#9679;</div><p>You haven\'t reported anything yet.</p></div>';
+    html += '<div class="empty"><div class="icon">&#9679;</div><p>No tickets filed yet.</p></div>';
   } else {
     mine.forEach(function(r){
-      html += '<div class="card ' + r.status + '"><div class="card-row">' + cardThumb() +
-        '<div class="card-body"><div class="card-cat">' + esc(r.category) + '</div>' +
+      var justStamped = r.status === "matched" && r._justStamped;
+      html += '<div class="card ' + r.status + '">' +
+        '<div class="card-cat">' + esc(r.category) + '</div>' +
         '<div class="card-desc">' + esc(r.description) + '</div>' +
-        '<div class="card-meta"><span>' + timeAgo(r.createdAt) + '</span>' +
-        (r.dropoffLocation ? '<span>&#8594; ' + esc(r.dropoffLocation) + '</span>' : '') + '</div></div>' +
-        statusPill(r.status) + '</div>';
+        '<div class="card-meta"><span>FILED ' + timeAgo(r.createdAt) + '</span>' +
+        (r.dropoffLocation ? '<span>&#8594; ' + esc(r.dropoffLocation) + '</span>' : '') + '</div>' +
+        '<div class="card-actions" style="justify-content:space-between; align-items:center;">' +
+        stampEl(r.status, justStamped);
       if(r.status === "matched"){
-        html += '<div class="card-actions"><button class="btn btn-small claim-btn" data-id="' + r.id + '">Mark as Claimed</button></div>';
+        html += '<button class="btn btn-small claim-btn" data-id="' + r.id + '">Mark as Claimed</button>';
       }
-      html += '</div>';
+      html += '</div></div>';
     });
   }
   $("main").innerHTML = html;
@@ -155,18 +157,17 @@ function renderNotifications(){
     return r.reporterId === state.myId && (r.status === "matched" || r.status === "claimed");
   }).sort(function(a,b){ return (b.matchedAt||0) - (a.matchedAt||0); });
 
-  var html = '<div class="section-label"><span>Notifications</span><span class="count">' + mine.length + '</span></div>';
+  var html = '<div class="section-label"><span>ALERTS</span><span class="count">' + mine.length + '</span></div>';
   if(mine.length === 0){
-    html += '<div class="empty"><div class="icon">&#9679;</div><p>No notifications yet.</p></div>';
+    html += '<div class="empty"><div class="icon">&#9679;</div><p>No word yet. Check back later.</p></div>';
   } else {
     mine.forEach(function(r){
       var unread = !r.acknowledged;
-      html += '<div class="notif' + (unread ? ' unread' : '') + '"><div class="notif-row">' +
-        '<div class="notif-dot"></div><div style="flex:1;">' +
-        '<div class="notif-title">Your item may have been found</div>' +
-        '<div class="notif-body">Someone found your ' + esc((r.category||"").toLowerCase()) +
-        ' &mdash; dropped off at ' + esc(r.dropoffLocation || "—") + '.</div>' +
-        '<div class="notif-time">' + timeAgo(r.matchedAt) + '</div></div></div></div>';
+      html += '<div class="notif' + (unread ? ' unread' : '') + '">' +
+        '<div class="notif-title">Item Recovered</div>' +
+        '<div class="notif-body">Your ' + esc((r.category||"").toLowerCase()) +
+        ' has been found and dropped off at ' + esc(r.dropoffLocation || "—") + '.</div>' +
+        '<div class="notif-time">' + timeAgo(r.matchedAt) + '</div></div>';
     });
   }
   $("main").innerHTML = html;
@@ -187,12 +188,12 @@ function openLostModal(){
   $("lostDesc").value = "";
   $("lostCatField").classList.remove("error");
   $("lostDescField").classList.remove("error");
-  resetSubmitBtn($("lostSubmitBtn"), "Submit Report");
+  resetSubmitBtn($("lostSubmitBtn"), "Stamp &amp; File Ticket");
   $("lostOverlay").classList.add("show");
 }
 function closeLostModal(){ $("lostOverlay").classList.remove("show"); }
 function resetSubmitBtn(btn, label){ btn.disabled = false; btn.innerHTML = label; }
-function loadingBtn(btn){ btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting…'; }
+function loadingBtn(btn){ btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Filing…'; }
 
 function submitLost(){
   var cat = $("lostCategory").value;
@@ -209,11 +210,11 @@ function submitLost(){
     reporterId: state.myId, reporterName: state.myName || "Anonymous",
     createdAt: Date.now()
   }).then(function(){
-    resetSubmitBtn(btn, "Submit Report");
+    resetSubmitBtn(btn, "Stamp &amp; File Ticket");
     closeLostModal();
-    showToast("Report submitted");
+    showToast("Ticket filed — you're on the board");
   }).catch(function(err){
-    resetSubmitBtn(btn, "Submit Report");
+    resetSubmitBtn(btn, "Stamp &amp; File Ticket");
     console.error("submitLost failed:", err);
     showToast("Error: " + err.message);
   });
@@ -224,12 +225,12 @@ function openFoundModal(reportId){
   var r = state.reports.find(function(x){ return x.id === reportId; });
   if(!r) return;
   state.foundReportId = reportId;
-  $("foundPreview").innerHTML = cardThumb() +
-    '<div style="flex:1;"><div class="card-cat" style="font-size:13px;">' + esc(r.category) + '</div>' +
-    '<div class="card-desc" style="margin-bottom:0;">' + esc(r.description) + '</div></div>';
+  $("foundPreview").innerHTML =
+    '<div class="card-cat">' + esc(r.category) + '</div>' +
+    '<div class="card-desc">' + esc(r.description) + '</div>';
   $("foundLoc").value = "";
   $("foundLocField").classList.remove("error");
-  resetSubmitBtn($("foundSubmitBtn"), "Confirm Found");
+  resetSubmitBtn($("foundSubmitBtn"), "Confirm &amp; Stamp Found");
   $("foundOverlay").classList.add("show");
 }
 function closeFoundModal(){ $("foundOverlay").classList.remove("show"); state.foundReportId = null; }
@@ -247,11 +248,11 @@ function submitFound(){
     finderId: state.myId, finderName: state.myName || "Anonymous",
     matchedAt: Date.now(), acknowledged: false
   }).then(function(){
-    resetSubmitBtn(btn, "Confirm Found");
+    resetSubmitBtn(btn, "Confirm &amp; Stamp Found");
     closeFoundModal();
-    showToast("Marked as found");
+    showToast("Stamped FOUND — owner will be notified");
   }).catch(function(err){
-    resetSubmitBtn(btn, "Confirm Found");
+    resetSubmitBtn(btn, "Confirm &amp; Stamp Found");
     console.error("submitFound failed:", err);
     showToast("Error: " + err.message);
   });
@@ -259,7 +260,7 @@ function submitFound(){
 
 function markClaimed(reportId){
   updateDoc(doc(db, "reports", reportId), { status: "claimed" })
-    .then(function(){ showToast("Marked as claimed"); })
+    .then(function(){ showToast("Marked CLAIMED — case closed"); })
     .catch(function(err){ showToast("Error: " + err.message); });
 }
 
@@ -284,7 +285,13 @@ function init(){
 
   var q = query(collection(db, "reports"), orderBy("createdAt", "desc"));
   onSnapshot(q, function(snap){
-    state.reports = snap.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
+    var prevMatched = {};
+    state.reports.forEach(function(r){ if(r.status === "matched") prevMatched[r.id] = true; });
+    state.reports = snap.docs.map(function(d){
+      var data = d.data(); data.id = d.id;
+      if(data.status === "matched" && !prevMatched[data.id]) data._justStamped = true;
+      return data;
+    });
     render();
   }, function(err){
     console.error("Firestore subscription error:", err);
